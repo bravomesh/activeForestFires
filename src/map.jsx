@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { fireData } from './data';
@@ -15,7 +15,13 @@ L.Icon.Default.mergeOptions({
     shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
 });
 
-const FireMap = () => {
+
+const FireMap = ({filtered}) => {
+    const [startDate, setStartDate] = useState("")
+    const [endDate, setEndDate] = useState("")
+    const handlefilter = ()=>{
+        return filtered(fireData, startDate, endDate)
+    }
     const createClusterCustomIcon = (cluster) => {
         const count = cluster.getChildCount();
         const sizeClass = count < 20 ? 'w-7 h-7' : count < 100 ? 'w-10 h-10' : 'w-12 h-12';
@@ -26,8 +32,28 @@ const FireMap = () => {
             // iconSize: point(40, 40, true),
         });
     };
-
+const filteredData = handlefilter()
     return (
+        <div>
+        {/* Date inputs for filtering */}
+        <div style={{ padding: '10px' }}>
+          <label>
+            Start Date:
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </label>
+          <label style={{ marginLeft: '10px' }}>
+            End Date:
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </label>
+        </div>
         <MapContainer center={[-20.66344833, 46.3418541]} zoom={5} style={{ height: '100vh', width: '100%' }}>
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -38,7 +64,7 @@ const FireMap = () => {
                 showCoverageOnHover={false}
                 iconCreateFunction={createClusterCustomIcon}
             >
-                {fireData.map((fire, index) => (
+                {filteredData.map((fire, index) => (
                     <Marker key={index} position={[fire.Latitude, fire.Longitude]}>
                         <Popup>
                             <div>
@@ -51,6 +77,7 @@ const FireMap = () => {
                 ))}
             </MarkerClusterGroup>
         </MapContainer>
+        </div>
     );
 };
 
